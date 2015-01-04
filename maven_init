@@ -1,0 +1,20 @@
+--- KGI example ---
+
+mvn compile
+java -cp ./target/classes/edu/umd/cs/psl/kgi/:./target/classes:`cat classpath.out` edu.umd.cs.psl.kgi.LoadData data/
+java -Xmx15800m -cp ./target/classes/edu/umd/cs/psl/kgi/:./target/classes:`cat classpath.out` edu.umd.cs.psl.kgi.RunKGI > out
+
+
+--- psl-Basic-Example---
+
+mvn compile
+mvn dependency:build-classpath -Dmdep.outputFile=classpath.out
+java -cp ./target/classes:`cat classpath.out` edu.umd.cs.example.BasicExample
+
+====MAVEN SETUP===============
+
+export M2_HOME=/usr/local/apache-maven/apache-maven-3.2.3
+export M2=$M2_HOME/bin
+export PATH=$M2:$PATH
+export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk
+export PATH=$JAVA_HOME:$PATH
