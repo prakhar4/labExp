@@ -49,14 +49,8 @@ PSLModel m = new PSLModel(this, data)
  */
 m.add predicate: "domainArg" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 m.add predicate: "rangeArg" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "inferable", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
+m.add predicate: "inferable", types: [ArgumentType.UniqueID, ArgumentType.String]
 
-/*
- * Now, we define a string similarity function bound to a predicate.
- * Note that we can use any implementation of ExternalFunction that acts on two strings!
- */
-//m.add function: "sameName" , implementation: new LevenshteinSimilarity()
-/* Also, try: new MyStringSimilarity(), see end of file */
 
 /* 
  * Having added all the predicates we need to represent our problem, we finally insert some rules into the model.
@@ -92,8 +86,7 @@ m.add rule: ~inferable(A,Y), weight: 10
 println m;
 
 /* 
- * We now insert data into our DataStore. All data is stored in a partition.
- * 
+ * We now insert data into our DataStore.
  * We can use insertion helpers for a specified predicate. Here we show how one can manually insert data
  * or use the insertion helpers to easily implement custom data loaders.
  */
@@ -116,15 +109,6 @@ InserterUtils.loadDelimitedDataTruth(insert, dir+"sn_seed.txt");
 
 Partition resultPart = new Partition(1000);
 
-
-/*
- * Of course, we can also load data directly from tab delimited data files.
- */
-/*
-insert = data.getInserter(rangeArg, partition)
-def dir = 'data'+java.io.File.separator+'sn'+java.io.File.separator;
-InserterUtils.loadDelimitedData(insert, dir+"sn_knows.txt");
-*/
 /*
  * After having loaded the data, we are ready to run some inference and see what kind of
  * alignment our model produces. Note that for now, we are using the predefined weights.
@@ -145,16 +129,23 @@ println "Inference results with hand-defined weights:"
 for (GroundAtom atom : Queries.getAllAtoms(db, inferable))
 	println atom.toString() + "\t" + atom.getValue();
 
+
+db.close();
+
+
+
+
+
+
+
+
+////////		WEIGHT LEARNING 		///////
+
+
 /* 
  * Next, we want to learn the weights from data. For that, we need to have some evidence
  * data from which we can learn. In our example, that means we need to specify the 'true'
- * alignment, which we now load into a second partition.
-
- 
-
- 
- 
- 
+ * alignment, which we now load into a second partition. 
  
 Partition trueDataPartition = new Partition(1);
 insert = data.getInserter(samePerson, trueDataPartition)
