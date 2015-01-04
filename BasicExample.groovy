@@ -84,8 +84,8 @@ m.add predicate: "inferable", types: [ArgumentType.UniqueID, ArgumentType.Unique
  * PSL does not ground the symmetric case.
  */
 
-m.add rule : ( inferable(X,Y) & domainArg(A,X) ) >> inferable(A,Y),  weight : 10000
-m.add rule : ( inferable(X,Y) & rangeArg(A,X) ) >> inferable(A,Y),  weight : 10000
+m.add rule : ( inferable(X,Y) & domainArg(A,X) ) >> inferable(A,Y),  weight : 100
+m.add rule : ( inferable(X,Y) & rangeArg(A,X) ) >> inferable(A,Y),  weight : 100
 
 
 /* Now, we move on to defining rules with sets. Before we can use sets in rules, we have to define how we would like those sets
@@ -135,9 +135,12 @@ def partition = new Partition(0);
 def insert = data.getInserter(domainArg, partition);
 
 insert.insert(10,1);
+insert.insert(20,3);
+insert.insert(20,1);
 insert.insert(20,2);
 insert.insert(30,3);
 insert.insert(40,4);
+insert.insert(50,4);
 insert.insert(50,5);
 
 
@@ -145,6 +148,8 @@ Partition partition2 = new Partition(10);
 def insert2 = data.getInserter(domainArg, partition2);
 
 insert2.insert(100,1);
+insert2.insert(200,1);
+insert2.insert(300,1);
 insert2.insert(200,2);
 insert2.insert(300,3);
 insert2.insert(400,4);
@@ -157,6 +162,8 @@ def insert3 = data.getInserter(inferable, partition3);
 insert3.insert(1,0);
 insert3.insert(3,0);
 insert3.insert(5,1);
+
+Partition resultPart = new Partition(1000);
 
 
 /*
@@ -175,7 +182,7 @@ InserterUtils.loadDelimitedData(insert, dir+"sn_knows.txt");
  * Name and Knows since we want to treat those atoms as observed, and leave the predicate
  * SamePerson open to infer its atoms' values.
  */
-Database db = data.getDatabase(partition3, [domainArg, rangeArg] as Set, partition, partition2);
+Database db = data.getDatabase(resultPart, [domainArg, rangeArg] as Set, partition, partition2, partition3);
 LazyMPEInference inferenceApp = new LazyMPEInference(m, db, config);
 inferenceApp.mpeInference();
 inferenceApp.close();
