@@ -1,19 +1,3 @@
-/*
- * This file is part of the PSL software.
- * Copyright 2011-2013 University of Maryland
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package edu.umd.cs.example;
 
 import edu.umd.cs.psl.application.inference.LazyMPEInference;
@@ -88,25 +72,7 @@ m.add rule : ( inferable(X,Y) & domainArg(A,X) ) >> inferable(A,Y),  weight : 10
 m.add rule : ( inferable(X,Y) & rangeArg(A,X) ) >> inferable(A,Y),  weight : 100
 
 
-/* Now, we move on to defining rules with sets. Before we can use sets in rules, we have to define how we would like those sets
- * to be compared. For this we define the set comparison predicate 'sameFriends' which compares two sets of friends. For each
- * set comparison predicate, we need to specify the type of aggregator function to use, in this case its the Jaccard equality,
- * and the predicate which is used for comparison (which must be binary). Note that you can also define your own aggregator functions.
- */
-//m.add setcomparison: "sameFriends" , using: SetComparison.Equality, on : samePerson
 
-/* Having defined a set comparison predicate, we can apply it in a rule. The body of the following rule is as above. However,
- * in the head, we use the 'sameFriends' set comparison to compare two sets defined using curly braces. To identify the elements
- * that are contained in the set, we can use object oriented syntax, where A.knows, denotes all those entities that are related to A
- * via the 'knows' relation, i.e the set { X | knows(A,X) }. The '+' operator denotes set union. We can also qualify a relation with
- * the 'inv' or 'inverse' keyword to denote its inverse.
- */
-//m.add rule :  (samePerson(A,B) & (A ^ B )) >> sameFriends( {A.knows + A.knows(inv) } , {B.knows + B.knows(inv) } ) , weight : 3.2
-
-/* Next, we define some constraints for our model. In this case, we restrict that each person can be aligned to at most one other person
- * in the other social network. To do so, we define two partial functional constraints where the latter is on the inverse.
- * We also say that samePerson must be symmetric, i.e., samePerson(p1, p2) == samePerson(p2, p1).
- */
 /*
 m.add PredicateConstraint.PartialFunctional , on : samePerson
 m.add PredicateConstraint.PartialInverseFunctional , on : samePerson
@@ -118,7 +84,7 @@ m.add PredicateConstraint.Symmetric, on : samePerson
  * people are not the samePerson with a little bit of weight. This can be overridden with evidence as defined
  * in the previous rules.
  */
-m.add rule: ~inferable(A,Y), weight: 1
+m.add rule: ~inferable(A,Y), weight: 10
 
 /*
  * Let's see what our model looks like.
@@ -131,37 +97,22 @@ println m;
  * We can use insertion helpers for a specified predicate. Here we show how one can manually insert data
  * or use the insertion helpers to easily implement custom data loaders.
  */
-def partition = new Partition(0);
-def insert = data.getInserter(domainArg, partition);
 
-insert.insert(10,1);
-insert.insert(20,3);
-insert.insert(20,1);
-insert.insert(20,2);
-insert.insert(30,3);
-insert.insert(40,4);
-insert.insert(50,4);
-insert.insert(50,5);
+def dir = 'data'+java.io.File.separator+'sn'+java.io.File.separator;
+Partition partition = new Partition(0);
+def insert = data.getInserter(domainArg, partition);
+InserterUtils.loadDelimitedData(insert, dir+"sn_domain.txt");
 
 
 Partition partition2 = new Partition(10);
-def insert2 = data.getInserter(domainArg, partition2);
+insert = data.getInserter(rangeArg, partition2)
+InserterUtils.loadDelimitedData(insert, dir+"sn_range.txt");
 
-insert2.insert(100,1);
-insert2.insert(200,1);
-insert2.insert(300,1);
-insert2.insert(200,2);
-insert2.insert(300,3);
-insert2.insert(400,4);
-insert2.insert(500,5);
-
-
+//NOTE THAT ADDITION IS DONE WITH THE TRUTH VALUES HERE - REMOVE OR PUT ONE WHILE SEEDING
 Partition partition3 = new Partition(100);
-def insert3 = data.getInserter(inferable, partition3);
+insert = data.getInserter(inferable, partition3)
+InserterUtils.loadDelimitedDataTruth(insert, dir+"sn_seed.txt");
 
-insert3.insert(1,0);
-insert3.insert(3,0);
-insert3.insert(5,1);
 
 Partition resultPart = new Partition(1000);
 
