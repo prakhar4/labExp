@@ -49,7 +49,7 @@ PSLModel m = new PSLModel(this, data)
  */
 m.add predicate: "domainArg" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 m.add predicate: "rangeArg" , types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
-m.add predicate: "inferable", types: [ArgumentType.UniqueID, ArgumentType.String]
+m.add predicate: "inferable", types: [ArgumentType.UniqueID, ArgumentType.UniqueID]
 
 
 /* 
@@ -67,69 +67,61 @@ m.add rule : ( inferable(X,Y) & rangeArg(A,X) ) >> inferable(A,Y),  weight : 100
 
 
 
+m.add PredicateConstraint.PartialFunctional , on : inferable
+//m.add PredicateConstraint.PartialInverseFunctional , on : inferable
+
 /*
 m.add PredicateConstraint.PartialFunctional , on : samePerson
 m.add PredicateConstraint.PartialInverseFunctional , on : samePerson
 m.add PredicateConstraint.Symmetric, on : samePerson
 */
 
-/*
- * Finally, we define a prior on the inference predicate samePerson. It says that we should assume two
- * people are not the samePerson with a little bit of weight. This can be overridden with evidence as defined
- * in the previous rules.
- */
+/* Prior to suggest that by default nothing is evaluated TRUE -- may create a Bias for questions evaluated by crowd as False */
 m.add rule: ~inferable(A,Y), weight: 10
 
-/*
- * Let's see what our model looks like.
- */
+/* Print the model with all rules */
 println m;
 
-/* 
- * We now insert data into our DataStore.
- * We can use insertion helpers for a specified predicate. Here we show how one can manually insert data
- * or use the insertion helpers to easily implement custom data loaders.
- */
+/* Inserting data from the files into DataStore -- Note the format for columns of input file*/
 
 def dir = 'data'+java.io.File.separator+'sn'+java.io.File.separator;
-Partition partition = new Partition(0);
-def insert = data.getInserter(domainArg, partition);
+Partition domainPart = new Partition(0);
+def insert = data.getInserter(domainArg, domainPart);
 InserterUtils.loadDelimitedData(insert, dir+"sn_domain.txt");
 
 
-Partition partition2 = new Partition(10);
-insert = data.getInserter(rangeArg, partition2)
+Partition rangePart = new Partition(10);
+insert = data.getInserter(rangeArg, rangePart)
 InserterUtils.loadDelimitedData(insert, dir+"sn_range.txt");
 
-//NOTE THAT ADDITION IS DONE WITH THE TRUTH VALUES HERE - REMOVE OR PUT ONE WHILE SEEDING
-Partition partition3 = new Partition(100);
-insert = data.getInserter(inferable, partition3)
+//NOTE THAT ADDITION IS DONE WITH THE TRUTH VALUES HERE - REMOVE (if needed) the TRUTH values WHILE SEEDING
+Partition seedPart = new Partition(100);
+insert = data.getInserter(inferable, seedPart)
 InserterUtils.loadDelimitedDataTruth(insert, dir+"sn_seed.txt");
 
 
+//Partition to store the results
 Partition resultPart = new Partition(1000);
 
-/*
- * After having loaded the data, we are ready to run some inference and see what kind of
- * alignment our model produces. Note that for now, we are using the predefined weights.
- * 
- * We first open up Partition 0 as a Database from the DataStore. We close the predicates
- * Name and Knows since we want to treat those atoms as observed, and leave the predicate
- * SamePerson open to infer its atoms' values.
+/* RUNNING THE INFERENCE with hard defined weights
+ * resultPart as first argument
+ * Close the predicates domainArg, rangeArg as these are observed
+ * pass the other partitions as observations
+ * NOTE- seedPart is observed part of INFERABLE predicate 
+ * so INFERABLE predicate is partially observed and read/write while others are completely observed and READ only.
  */
-Database db = data.getDatabase(resultPart, [domainArg, rangeArg] as Set, partition, partition2, partition3);
+
+Database db = data.getDatabase(resultPart, [domainArg, rangeArg] as Set, domainPart, rangePart, seedPart);
 LazyMPEInference inferenceApp = new LazyMPEInference(m, db, config);
 inferenceApp.mpeInference();
 inferenceApp.close();
 
-/*
- * Let's see the results
- */
+/* Printing the results */
 println "Inference results with hand-defined weights:"
 for (GroundAtom atom : Queries.getAllAtoms(db, inferable))
 	println atom.toString() + "\t" + atom.getValue();
 
-
+//database close to clear the buffer
 db.close();
 
 
