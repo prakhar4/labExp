@@ -18,3 +18,36 @@ export M2=$M2_HOME/bin
 export PATH=$M2:$PATH
 export JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk
 export PATH=$JAVA_HOME:$PATH
+
+
+
+
+
+
+
+
+
+
+---- BASH STUFF
+
+to add line number in beginning of each line : cat -n filename > otpfile
+
+it adds four spaces in front, to remove those spaces - run sed
+sed 's/^[\t ]*//g' < inputFile > outputFile
+
+
+--Executing this from Jan9 folder--
+
+cat nellAll_number_wo_gene | while read -r line; do
+Arg1=`cut -d " " -f 1 <<<$line`; echo Arg1=$Arg1;
+Arg2=`cut -d " " -f 2 <<<$line`; echo Arg2=$Arg2;
+Arg3=`cut -d " " -f 3 <<<$line`; echo Arg3=$Arg3;
+Arg4=`cut -d " " -f 4 <<<$line`; echo Arg4=$Arg4; 
+Res1=`grep -P "^$Arg3\tdomain\t" NELL.08m.890.ontology.csv`; echo Res1=$Res1;
+Domain=`cut -d " " -f 3 <<<$Res1`; echo $Domain; 
+Res2=`grep -P "$Arg2\tgeneralizations\t$Domain" Nell_numbered`; echo Res2=$Res2;
+DomainID=`cut -d " " -f 1 <<<$Res2`; echo DomainID=$DomainID; echo -e "$DomainID\t$Arg1" >>RESULTS; done
+
+
+
+
