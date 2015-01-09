@@ -23,7 +23,16 @@ export PATH=$JAVA_HOME:$PATH
 
 
 
+---- VIM STUFF ---
+to open in vertical tab (vertical split)-- :vs <file>
 
+for varying size -- 
+30 Ctrl+w >		--will increase size by 30
+30 Ctrl+w <		--will decrease size by 30
+
+for horizontal -- :sp <file>
+QUIT all tabs - :qa
+SAVE N QUIT-- 	:wqa
 
 
 
@@ -43,10 +52,116 @@ Arg1=`cut -d " " -f 1 <<<$line`; echo Arg1=$Arg1;
 Arg2=`cut -d " " -f 2 <<<$line`; echo Arg2=$Arg2;
 Arg3=`cut -d " " -f 3 <<<$line`; echo Arg3=$Arg3;
 Arg4=`cut -d " " -f 4 <<<$line`; echo Arg4=$Arg4; 
-Res1=`grep -P "^$Arg3\tdomain\t" NELL.08m.890.ontology.csv`; echo Res1=$Res1;
+Res1=`grep -P "^$Arg3\trange\t" NELL.08m.890.ontology.csv`; echo Res1=$Res1;
 Domain=`cut -d " " -f 3 <<<$Res1`; echo $Domain; 
 Res2=`grep -P "$Arg2\tgeneralizations\t$Domain" Nell_numbered`; echo Res2=$Res2;
 DomainID=`cut -d " " -f 1 <<<$Res2`; echo DomainID=$DomainID; echo -e "$DomainID\t$Arg1" >>RESULTS; done
+
+
+---
+
+cat last_unmatched | while read -r line; do
+	grep -P "^$line\t" last_nell_blf >> asdzxc
+done
+	 
+----
+
+--Executing from Jan9/last/
+
+cat last_10000_unmatchedDomain | while read -r line; do
+Arg1=`cut -d " " -f 1 <<<$line`; echo Arg1=$Arg1;
+Arg2=`cut -d " " -f 2 <<<$line`;
+Arg3=`cut -d " " -f 3 <<<$line`;
+Arg4=`cut -d " " -f 4 <<<$line`;
+Split1=`cut -d ":" -f 1 <<<$Arg2`;
+Split2=`cut -d ":" -f 2 <<<$Arg2`;
+Res1=`grep -P "^$Arg2\tgeneralizations\t$Split1:$Split2" last_250000_nell_gene`; echo Res1=$Res1;
+DomainID=`cut -d " " -f 1 <<<$Res1`;
+echo -e "$DomainID\t$Arg1" >>RESULTS;
+done;
+
+
+cat top_10000_unmatch | while read -r line; do
+Res1=`grep -P "^$line\t" top_nell_blf`;
+Arg1=`cut -d " " -f 1 <<<$Res1`; echo Arg1=$Arg1;
+Arg2=`cut -d " " -f 2 <<<$Res1`;
+Arg3=`cut -d " " -f 3 <<<$Res1`;
+Arg4=`cut -d " " -f 4 <<<$Res1`;
+Split1=`cut -d ":" -f 1 <<<$Arg2`;
+Split2=`cut -d ":" -f 2 <<<$Arg2`; Res2=`grep -P "$Arg2\tgeneralizations\t$Split1:$Split2" top_nell_blf`; echo Res2=$Res2;
+DomainID=`cut -d " " -f 1 <<<$Res2`; echo -e "$DomainID\t$Arg1" >>RESULTS; done;
+
+
+
+cat unmatched_middle | while read -r line; do Res1=`grep -m 1 -P "^$line\t" Nell_middle`;
+Arg1=`cut -d " " -f 1 <<<$Res1`;
+Arg2=`cut -d " " -f 2 <<<$Res1`;
+Arg3=`cut -d " " -f 3 <<<$Res1`;
+Arg4=`cut -d " " -f 4 <<<$Res1`;
+Split1=`cut -d ":" -f 1 <<<$Arg2`;
+Split2=`cut -d ":" -f 2 <<<$Arg2`; Res2=`grep -m 1 -P "$Arg2\tgeneralizations\t$Split1:$Split2" Nell_middle`; 
+if [[ -n "$Res2" ]] ; then
+echo Res2=$Res2;
+DomainID=`cut -d " " -f 1 <<<$Res2`; echo -e "$DomainID\t$Arg1" >>RESULTS; 
+fi;
+done
+
+
+
+
+
+--Executing this from Jan10 folder--
+
+cat nellAll_number_wo_gene | while read -r line; do
+Arg1=`cut -d " " -f 1 <<<$line`; echo Arg1=$Arg1;
+Arg2=`cut -d " " -f 2 <<<$line`;
+Arg3=`cut -d " " -f 3 <<<$line`;
+Arg4=`cut -d " " -f 4 <<<$line`;
+Res1=`grep -P "$Arg3\trange\t" NELL.08m.890.ontology.csv`; 
+Ranges=`cut -d " " -f 3 <<<$Res1`;
+Res2=`grep -m 1 -P "$Arg4\tgeneralizations\t$Ranges" nellAll_number_gene`;
+
+if [[ -n "$Res2" ]] ; then
+	RangesID=`cut -d " " -f 1 <<<$Res2`; echo -e "$RangesID\t$Arg1" >>RESULTS;
+else
+	Split1=`cut -d ":" -f 1 <<<$Arg4`;
+	Split2=`cut -d ":" -f 2 <<<$Arg4`; 
+	Res3=`grep -m 1 -P "$Arg4\tgeneralizations\t$Split1:$Split2" nellAll_number_gene`;
+	RangesID=`cut -d " " -f 1 <<<$Res3`; echo -e "$RangesID\t$Arg1" >>RESULTS; 
+fi;
+
+done
+
+
+--===WHAT SHELL RAN=== Jan10 = for range extraction
+cat nellAll_number_wo_gene | while read -r line; do
+Arg1=`cut -d " " -f 1 <<<$line`; echo Arg1=$Arg1;
+Arg2=`cut -d " " -f 2 <<<$line`;
+Arg3=`cut -d " " -f 3 <<<$line`;
+Arg4=`cut -d " " -f 4 <<<$line`; Res1=`grep -P "$Arg3\trange\t" NELL.08m.890.ontology.csv`; 
+Ranges=`cut -d " " -f 3 <<<$Res1`; Res2=`grep -m 1 -P "$Arg4\tgeneralizations\t$Ranges" nellAll_number_gene`; if [[ -n "$Res2" ]] ; then
+RangesID=`cut -d " " -f 1 <<<$Res2`; echo -e "$RangesID\t$Arg1" >>RESULTS; else
+Split1=`cut -d ":" -f 1 <<<$Arg4`;
+Split2=`cut -d ":" -f 2 <<<$Arg4`;  Res3=`grep -m 1 -P "$Arg4\tgeneralizations\t$Split1:$Split2" nellAll_number_gene`;
+RangesID=`cut -d " " -f 1 <<<$Res3`; echo -e "AA$RangesID\t$Arg1" >>RESULTS;  fi; done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
